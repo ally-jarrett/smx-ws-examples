@@ -16,6 +16,7 @@
 package com.fusesource.examples.greeter.impl;
 
 import org.slf4j.*;
+
 import com.fusesource.examples.greeter.Greeter;
 import com.fusesource.examples.greeter.PingMeFault;
 import com.fusesource.examples.greeter.model.FaultDetail;
@@ -34,6 +35,12 @@ public class ConcreteGreeter implements Greeter {
   }
 
   public String greetMe(String me) {
+	  try {
+		Thread.sleep(120000);
+	} catch (InterruptedException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
      log.info("Executing operation greetMe");
      log.info("Message received: " + me + "\n");
      return greet(me);

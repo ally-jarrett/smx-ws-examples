@@ -17,32 +17,45 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:camel="http://camel.apache.org/schema/spring"
+       xmlns:cxf="http://camel.apache.org/schema/cxf" 
+       xmlns:http-conf="http://cxf.apache.org/transports/http/configuration" 
        xsi:schemaLocation="
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+       http://cxf.apache.org/transports/http/configuration http://cxf.apache.org/schemas/configuration/http-conf.xsd
+       http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd ">
 
-  <camelContext id="com.fusesource.examples.ws-camel-client" xmlns="http://camel.apache.org/schema/spring">
-    
-    <route id="periodicGreeter">
-      <from uri="timer:foo?period=5000"/>
-      <!-- set the action to be triggered -->
-      <setHeader headerName="operationName">
-        <constant>greetMe</constant>
-      </setHeader>
-      <transform>
-        <constant>My Favourite Web Service</constant>
-      </transform>
-      <log message="The message contains ${body}"/>
+<import resource="classpath:META-INF/cxf/cxf.xml"/> 
+  	
+  	<!-- Add a Timeout of 90 Seconds -->
+  	<import resource="classpath:META-INF/cxf/cxf.xml"/> 
+  	<http-conf:conduit name="*.http-conduit">
+		<http-conf:client ReceiveTimeout="90000" ConnectionTimeout="90000" />
+	</http-conf:conduit>
+
+	<camelContext id="com.fusesource.examples.ws-camel-client" xmlns="http://camel.apache.org/schema/spring">
+
+		<route id="periodicGreeter">
+			<from uri="timer:foo?period=180000" />
+			<!-- set the action to be triggered -->
+			<setHeader headerName="operationName">
+				<constant>greetMe</constant>
+			</setHeader>
+			<transform>
+				<constant>My Favourite Web Service</constant>
+			</transform>
+			<log message="Timeout Test: The message contains ${body}" />
+			<to uri="cxf:http://localhost:9090/greeterImpl?serviceClass=com.fusesource.examples.greeter.Greeter" />
       
-      <loadBalance>
+      <!-- <loadBalance>
         <failover roundRobin="true" maximumFailoverAttempts="1"/>
-        <!-- exposed by ws-cxf-service -->
+        exposed by ws-cxf-service
         <to uri="cxf:http://localhost:9090/greeter?serviceClass=com.fusesource.examples.greeter.Greeter" />
-        <!-- exposed by ws-camel-service -->
+        exposed by ws-camel-service
         <to uri="cxf:http://localhost:9090/greeterImpl?serviceClass=com.fusesource.examples.greeter.Greeter" />
-        <!-- exposed by ws-camel-proxy -->
+        exposed by ws-camel-proxy
         <to uri="cxf:http://localhost:9091/greeterProxy?serviceClass=com.fusesource.examples.greeter.Greeter" />
-      </loadBalance>
+      </loadBalance> -->
     </route>
 
   </camelContext>
